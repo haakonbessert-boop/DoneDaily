@@ -1,21 +1,23 @@
-//
-//  ContentView.swift
-//  DoneDaily
-//
-//  Created by Bessert,Haakon on 23.02.26.
-//
-
 import SwiftUI
 
 struct ContentView: View {
     var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
+        TabView {
+            TodayView()
+                .tabItem {
+                    Label("Heute", systemImage: "checkmark.circle")
+                }
+
+            HabitsView()
+                .tabItem {
+                    Label("Habits", systemImage: "list.bullet")
+                }
+
+            StatsView()
+                .tabItem {
+                    Label("Statistik", systemImage: "chart.bar")
+                }
         }
-        .padding()
     }
 }
 
