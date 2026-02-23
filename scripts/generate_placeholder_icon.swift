@@ -1,29 +1,44 @@
 import AppKit
 
 let size: CGFloat = 1024
+let image = NSImage(size: NSSize(width: size, height: size))
 let rect = NSRect(x: 0, y: 0, width: size, height: size)
 
-let image = NSImage(size: NSSize(width: size, height: size))
 image.lockFocus()
 
+NSColor(calibratedRed: 0.95, green: 0.97, blue: 1.0, alpha: 1).setFill()
+rect.fill()
+
 let gradient = NSGradient(colors: [
-    NSColor(calibratedRed: 0.12, green: 0.57, blue: 0.95, alpha: 1),
-    NSColor(calibratedRed: 0.10, green: 0.74, blue: 0.50, alpha: 1)
+    NSColor(calibratedRed: 0.06, green: 0.48, blue: 0.95, alpha: 1),
+    NSColor(calibratedRed: 0.14, green: 0.74, blue: 0.54, alpha: 1)
 ])!
-gradient.draw(in: rect, angle: -45)
 
-let text = "DD"
-let paragraph = NSMutableParagraphStyle()
-paragraph.alignment = .center
+let roundedRect = NSBezierPath(
+    roundedRect: NSRect(x: 112, y: 112, width: 800, height: 800),
+    xRadius: 180,
+    yRadius: 180
+)
+gradient.draw(in: roundedRect, angle: -35)
 
-let attrs: [NSAttributedString.Key: Any] = [
-    .font: NSFont.systemFont(ofSize: 380, weight: .bold),
-    .foregroundColor: NSColor.white,
-    .paragraphStyle: paragraph
-]
+let ring = NSBezierPath(
+    roundedRect: NSRect(x: 220, y: 220, width: 584, height: 584),
+    xRadius: 130,
+    yRadius: 130
+)
+NSColor.white.withAlphaComponent(0.2).setStroke()
+ring.lineWidth = 24
+ring.stroke()
 
-let textRect = NSRect(x: 0, y: 250, width: size, height: 500)
-text.draw(in: textRect, withAttributes: attrs)
+let checkPath = NSBezierPath()
+checkPath.move(to: NSPoint(x: 330, y: 510))
+checkPath.line(to: NSPoint(x: 470, y: 360))
+checkPath.line(to: NSPoint(x: 700, y: 650))
+NSColor.white.setStroke()
+checkPath.lineWidth = 68
+checkPath.lineCapStyle = .round
+checkPath.lineJoinStyle = .round
+checkPath.stroke()
 
 image.unlockFocus()
 

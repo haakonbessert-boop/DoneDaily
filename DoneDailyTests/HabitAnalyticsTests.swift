@@ -55,6 +55,49 @@ final class HabitAnalyticsTests: XCTestCase {
         XCTAssertEqual(habit.streak(referenceDate: today, calendar: calendar), 2)
     }
 
+    func testStreakRequiresCompletedTodayEntry() {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(secondsFromGMT: 0)!
+
+        let today = makeDate(2026, 2, 23, calendar: calendar)
+        let yesterday = makeDate(2026, 2, 22, calendar: calendar)
+
+        let habit = Habit(name: "2L Wasser trinken", iconName: "drop.fill", color: .blue, targetPerWeek: 7)
+        habit.logs = [
+            HabitLog(date: today, completed: false, habit: habit),
+            HabitLog(date: yesterday, completed: true, habit: habit)
+        ]
+
+        XCTAssertEqual(habit.streak(referenceDate: today, calendar: calendar), 0)
+    }
+
+    func testCountHabitStreakRequiresDailyTargetReached() {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(secondsFromGMT: 0)!
+
+        let today = makeDate(2026, 2, 23, calendar: calendar)
+        let yesterday = makeDate(2026, 2, 22, calendar: calendar)
+
+        let habit = Habit(
+            name: "2L Wasser trinken",
+            iconName: "drop.fill",
+            color: .blue,
+            targetPerWeek: 7,
+            trackingType: .count,
+            dailyTarget: 8
+        )
+
+        habit.logs = [
+            HabitLog(date: today, completed: false, progressCount: 7, habit: habit),
+            HabitLog(date: yesterday, completed: true, progressCount: 8, habit: habit)
+        ]
+
+        XCTAssertEqual(habit.streak(referenceDate: today, calendar: calendar), 0)
+
+        habit.setProgress(8, on: today, calendar: calendar)
+        XCTAssertEqual(habit.streak(referenceDate: today, calendar: calendar), 2)
+    }
+
     func testToggleCompletionSameDayDoesNotCreateDuplicateLog() {
         var calendar = Calendar(identifier: .gregorian)
         calendar.timeZone = TimeZone(secondsFromGMT: 0)!
@@ -67,6 +110,36 @@ final class HabitAnalyticsTests: XCTestCase {
 
         XCTAssertEqual(habit.logs.count, 1)
         XCTAssertEqual(habit.logs.first?.completed, false)
+    }
+
+    func testIsDueRespectsWeekdaysWhenReminderEnabled() {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(secondsFromGMT: 0)!
+        let monday = makeDate(2026, 2, 23, calendar: calendar)
+
+        let habit = Habit(
+            name: "Test",
+            iconName: "book.fill",
+            color: .blue,
+            targetPerWeek: 7,
+            reminderEnabled: true,
+            reminderWeekdays: [2]
+        )
+
+        XCTAssertTrue(habit.isDue(on: monday, calendar: calendar))
+    }
+
+    func testPausedHabitIsNotActive() {
+        let habit = Habit(
+            name: "Test",
+            iconName: "book.fill",
+            color: .blue,
+            targetPerWeek: 7,
+            isPaused: true,
+            pausedUntil: .now.addingTimeInterval(24 * 60 * 60)
+        )
+
+        XCTAssertFalse(habit.isActive)
     }
 
     private func makeDate(_ year: Int, _ month: Int, _ day: Int, calendar: Calendar) -> Date {

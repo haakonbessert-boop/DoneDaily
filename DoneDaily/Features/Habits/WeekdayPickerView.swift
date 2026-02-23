@@ -20,6 +20,8 @@ struct WeekdayPickerView: View {
                         .clipShape(RoundedRectangle(cornerRadius: 8))
                 }
                 .buttonStyle(.plain)
+                .accessibilityLabel(labels[weekday - 1])
+                .accessibilityValue(selectedWeekdays.contains(weekday) ? "Ausgewahlt" : "Nicht ausgewahlt")
             }
         }
     }

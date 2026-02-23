@@ -1,12 +1,15 @@
 import SwiftData
 
 extension ModelContext {
-    func saveIfNeeded() {
-        guard hasChanges else { return }
+    @discardableResult
+    func saveIfNeeded() -> Bool {
+        guard hasChanges else { return true }
         do {
             try save()
+            return true
         } catch {
-            assertionFailure("SwiftData save failed: \(error)")
+            AppErrorReporter.report("SwiftData save failed: \(error)")
+            return false
         }
     }
 }
