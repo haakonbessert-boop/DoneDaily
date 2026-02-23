@@ -3,6 +3,7 @@ import SwiftUI
 
 @main
 struct DoneDailyApp: App {
+    @StateObject private var appSettings = AppSettings()
     private let container: ModelContainer
 
     init() {
@@ -14,6 +15,7 @@ struct DoneDailyApp: App {
             let configuration = ModelConfiguration(schema: schema)
             container = try ModelContainer(for: schema, configurations: [configuration])
             seedIfNeeded(context: container.mainContext)
+            syncReminderSchedules(context: container.mainContext)
         } catch {
             fatalError("Failed to initialize SwiftData container: \(error)")
         }
@@ -22,6 +24,7 @@ struct DoneDailyApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .environmentObject(appSettings)
         }
         .modelContainer(container)
     }
@@ -47,6 +50,19 @@ struct DoneDailyApp: App {
             context.saveIfNeeded()
         } catch {
             assertionFailure("Failed to seed initial habits: \(error)")
+        }
+    }
+
+    private func syncReminderSchedules(context: ModelContext) {
+        do {
+            let habits = try context.fetch(FetchDescriptor<Habit>())
+            Task {
+                for habit in habits {
+                    await HabitReminderScheduler.scheduleIfEnabled(for: habit)
+                }
+            }
+        } catch {
+            assertionFailure("Failed to sync reminders: \(error)")
         }
     }
 }
